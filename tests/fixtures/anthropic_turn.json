@@ -1,0 +1,96 @@
+{
+  "model": "claude-sonnet-4-20250514",
+  "max_tokens": 4096,
+  "system": [
+    {
+      "type": "text",
+      "text": "You are a production incident assistant. You are a production incident assistant. You are a production incident assistant. You are a production incident assistant. You are a production incident assistant. You are a production incident assistant. You are a production incident assistant. You are a production incident assistant. You are a production incident assistant. You are a production incident assistant. You are a production incident assistant. You are a production incident assistant. You are a production incident assistant. You are a production incident assistant. You are a production incident assistant. "
+    },
+    {
+      "type": "text",
+      "text": "Never take a destructive action without approval. Never take a destructive action without approval. Never take a destructive action without approval. Never take a destructive action without approval. Never take a destructive action without approval. Never take a destructive action without approval. Never take a destructive action without approval. Never take a destructive action without approval. ",
+      "cache_control": {
+        "type": "ephemeral"
+      }
+    }
+  ],
+  "tools": [
+    {
+      "name": "query_logs",
+      "description": "Query the log store.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "The search query to run against the index."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum results to return. Defaults to 10."
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    },
+    {
+      "name": "get_metrics",
+      "description": "Fetch metrics for a service.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "The search query to run against the index."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum results to return. Defaults to 10."
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    }
+  ],
+  "messages": [
+    {
+      "role": "user",
+      "content": "Checkout is returning 502s."
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "Checking the logs."
+        },
+        {
+          "type": "tool_use",
+          "id": "tu_1",
+          "name": "query_logs",
+          "input": {
+            "query": "502 checkout"
+          }
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "tool_result",
+          "tool_use_id": "tu_1",
+          "content": "2026-09-06T06:00 ERROR upstream timeout\n2026-09-06T06:01 ERROR upstream timeout\n2026-09-06T06:02 ERROR upstream timeout\n2026-09-06T06:03 ERROR upstream timeout\n2026-09-06T06:04 ERROR upstream timeout\n2026-09-06T06:05 ERROR upstream timeout\n2026-09-06T06:06 ERROR upstream timeout\n2026-09-06T06:07 ERROR upstream timeout\n2026-09-06T06:08 ERROR upstream timeout\n2026-09-06T06:09 ERROR upstream timeout\n2026-09-06T06:10 ERROR upstream timeout\n2026-09-06T06:11 ERROR upstream timeout\n2026-09-06T06:12 ERROR upstream timeout\n2026-09-06T06:13 ERROR upstream timeout\n2026-09-06T06:14 ERROR upstream timeout\n2026-09-06T06:15 ERROR upstream timeout\n2026-09-06T06:16 ERROR upstream timeout\n2026-09-06T06:17 ERROR upstream timeout\n2026-09-06T06:18 ERROR upstream timeout\n2026-09-06T06:19 ERROR upstream timeout\n2026-09-06T06:20 ERROR upstream timeout\n2026-09-06T06:21 ERROR upstream timeout\n2026-09-06T06:22 ERROR upstream timeout\n2026-09-06T06:23 ERROR upstream timeout\n2026-09-06T06:24 ERROR upstream timeout\n2026-09-06T06:25 ERROR upstream timeout\n2026-09-06T06:26 ERROR upstream timeout\n2026-09-06T06:27 ERROR upstream timeout\n2026-09-06T06:28 ERROR upstream timeout\n2026-09-06T06:29 ERROR upstream timeout\n2026-09-06T06:30 ERROR upstream timeout\n2026-09-06T06:31 ERROR upstream timeout\n2026-09-06T06:32 ERROR upstream timeout\n2026-09-06T06:33 ERROR upstream timeout\n2026-09-06T06:34 ERROR upstream timeout\n2026-09-06T06:35 ERROR upstream timeout\n2026-09-06T06:36 ERROR upstream timeout\n2026-09-06T06:37 ERROR upstream timeout\n2026-09-06T06:38 ERROR upstream timeout\n2026-09-06T06:39 ERROR upstream timeout\n2026-09-06T06:40 ERROR upstream timeout\n2026-09-06T06:41 ERROR upstream timeout\n2026-09-06T06:42 ERROR upstream timeout\n2026-09-06T06:43 ERROR upstream timeout\n2026-09-06T06:44 ERROR upstream timeout\n2026-09-06T06:45 ERROR upstream timeout\n2026-09-06T06:46 ERROR upstream timeout\n2026-09-06T06:47 ERROR upstream timeout\n2026-09-06T06:48 ERROR upstream timeout\n2026-09-06T06:49 ERROR upstream timeout\n2026-09-06T06:50 ERROR upstream timeout\n2026-09-06T06:51 ERROR upstream timeout\n2026-09-06T06:52 ERROR upstream timeout\n2026-09-06T06:53 ERROR upstream timeout\n2026-09-06T06:54 ERROR upstream timeout\n2026-09-06T06:55 ERROR upstream timeout\n2026-09-06T06:56 ERROR upstream timeout\n2026-09-06T06:57 ERROR upstream timeout\n2026-09-06T06:58 ERROR upstream timeout\n2026-09-06T06:59 ERROR upstream timeout"
+        },
+        {
+          "type": "text",
+          "text": "Anything in the metrics?"
+        }
+      ]
+    }
+  ]
+}
