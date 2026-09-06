@@ -6,14 +6,14 @@
   <a href="#is-your-prompt-cache-actually-working">Cache</a> ·
   <a href="#recording-a-session">Recording</a> ·
   <a href="#adapters">Adapters</a> ·
-  <a href="CONTRIBUTING.md">Contribute</a>
+  <a href="https://github.com/muhammadwaqar12/tokenprof/blob/main/CONTRIBUTING.md">Contribute</a>
 </p>
 
 <p align="center">
-  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-3a6b4d"></a>
+  <a href="https://github.com/muhammadwaqar12/tokenprof/blob/main/LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-3a6b4d"></a>
   <img alt="Python" src="https://img.shields.io/badge/python-3.9%2B-3a6b4d">
   <img alt="Dependencies" src="https://img.shields.io/badge/dependencies-0-9a6a15">
-  <a href="CONTRIBUTING.md"><img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-3a6b4d"></a>
+  <a href="https://github.com/muhammadwaqar12/tokenprof/blob/main/CONTRIBUTING.md"><img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-3a6b4d"></a>
 </p>
 
 ---
@@ -154,11 +154,11 @@ Not a runtime guard. It reads recordings after the fact, on purpose, so a profil
 
 ## Contributing
 
-The most useful contributions are adapters, and payload shapes that break detection. If `tokenprof` cannot read your logs, that is a bug and a redacted sample is the whole fix. See [CONTRIBUTING.md](CONTRIBUTING.md).
+The most useful contributions are adapters, and payload shapes that break detection. If `tokenprof` cannot read your logs, that is a bug and a redacted sample is the whole fix. See [CONTRIBUTING.md](https://github.com/muhammadwaqar12/tokenprof/blob/main/CONTRIBUTING.md).
 
 ## License
 
-[MIT](LICENSE).
+[MIT](https://github.com/muhammadwaqar12/tokenprof/blob/main/LICENSE).
 
 ---
 
