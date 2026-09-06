@@ -1,6 +1,6 @@
 import pytest
 
-from ctxprof.types import Category, Profile, Segment, Turn
+from tokenprof.types import Category, Profile, Segment, Turn
 
 
 def _turn(**kw) -> Turn:

@@ -8,9 +8,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from ctxprof.adapters.anthropic_messages import AnthropicMessagesAdapter
-from ctxprof.adapters.base import Adapter
-from ctxprof.adapters.openai_chat import OpenAIChatAdapter
+from tokenprof.adapters.anthropic_messages import AnthropicMessagesAdapter
+from tokenprof.adapters.base import Adapter
+from tokenprof.adapters.openai_chat import OpenAIChatAdapter
 
 ADAPTERS: list[Adapter] = [
     AnthropicMessagesAdapter(),

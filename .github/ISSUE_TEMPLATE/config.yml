@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Adapter request
+    url: https://github.com/muhammadwaqar12/tokenprof/issues/new?template=adapter-or-payload.md
+    about: tokenprof cannot read your logs, or you want support for a framework

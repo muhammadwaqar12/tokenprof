@@ -1,4 +1,4 @@
-from ctxprof.cost import cost_usd, price_per_mtok
+from tokenprof.cost import cost_usd, price_per_mtok
 
 
 def test_unknown_model_returns_none():

@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from ctxprof.cli import main
+from tokenprof.cli import main
 
 
 def test_analyze_table(capsys, openai_session_path):

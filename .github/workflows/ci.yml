@@ -56,4 +56,4 @@ jobs:
           python-version: "3.12"
       - run: pip install build
       - run: python -m build
-      - run: pip install dist/*.whl && ctxprof --version
+      - run: pip install dist/*.whl && tokenprof --version

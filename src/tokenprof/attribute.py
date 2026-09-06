@@ -6,9 +6,9 @@ import json
 from collections.abc import Iterable, Iterator
 from typing import Any
 
-from ctxprof.adapters import Adapter, detect, get_adapter
-from ctxprof.tokenizer import Tokenizer, get_tokenizer
-from ctxprof.types import Profile, Turn
+from tokenprof.adapters import Adapter, detect, get_adapter
+from tokenprof.tokenizer import Tokenizer, get_tokenizer
+from tokenprof.types import Profile, Turn
 
 
 def profile_request(

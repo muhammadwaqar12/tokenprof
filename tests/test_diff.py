@@ -1,6 +1,6 @@
-from ctxprof.attribute import profile_stream, read_jsonl
-from ctxprof.diff import Delta, diff_turns
-from ctxprof.types import Category, Segment, Turn
+from tokenprof.attribute import profile_stream, read_jsonl
+from tokenprof.diff import Delta, diff_turns
+from tokenprof.types import Category, Segment, Turn
 
 
 def test_delta_change_and_pct():

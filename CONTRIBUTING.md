@@ -4,7 +4,7 @@ The two most useful things you can send: an adapter, or a payload that breaks de
 
 ## Payloads that break detection
 
-If `ctxprof` cannot read your logs, that is a bug and the fix is usually small. Open an issue with a **redacted** sample: replace the actual prompt and tool result text with filler of roughly the same length, keep the structure. Structure is all the parser cares about, and length is all the profiler cares about, so a redacted sample is just as useful as a real one and safe to post.
+If `tokenprof` cannot read your logs, that is a bug and the fix is usually small. Open an issue with a **redacted** sample: replace the actual prompt and tool result text with filler of roughly the same length, keep the structure. Structure is all the parser cares about, and length is all the profiler cares about, so a redacted sample is just as useful as a real one and safe to post.
 
 ## Writing an adapter
 
@@ -19,7 +19,7 @@ class MyAdapter:
     def segments(self, request: dict, tok: Tokenizer) -> list[Segment]: ...
 ```
 
-Add the module under `src/ctxprof/adapters/`, register it in `ADAPTERS`, and add a fixture under `tests/fixtures/`.
+Add the module under `src/tokenprof/adapters/`, register it in `ADAPTERS`, and add a fixture under `tests/fixtures/`.
 
 Two rules that matter more than they look:
 

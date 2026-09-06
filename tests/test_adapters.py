@@ -1,10 +1,10 @@
 import pytest
 
-from ctxprof.adapters import ADAPTERS, detect, get_adapter
-from ctxprof.adapters.anthropic_messages import AnthropicMessagesAdapter
-from ctxprof.adapters.openai_chat import OpenAIChatAdapter
-from ctxprof.tokenizer import HeuristicTokenizer
-from ctxprof.types import Category
+from tokenprof.adapters import ADAPTERS, detect, get_adapter
+from tokenprof.adapters.anthropic_messages import AnthropicMessagesAdapter
+from tokenprof.adapters.openai_chat import OpenAIChatAdapter
+from tokenprof.tokenizer import HeuristicTokenizer
+from tokenprof.types import Category
 
 TOK = HeuristicTokenizer()
 

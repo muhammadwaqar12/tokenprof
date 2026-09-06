@@ -22,7 +22,7 @@ You know how many tokens your last request used, because the API told you. You a
 There are tools that compress your context and tools that retrieve into it. There is nothing that opens it up and shows you the bill line by line. So when a session gets slow and expensive, the usual move is to guess.
 
 ```
-$ ctxprof analyze session.jsonl --turn 2
+$ tokenprof analyze session.jsonl --turn 2
 
 turn 2  model=gpt-4o  provider=openai_chat
 tokenizer: heuristic(chars/4)
@@ -52,18 +52,19 @@ One auto-generated tool is consuming 80% of the schema budget and is serialized 
 ## Quickstart
 
 ```bash
-pip install ctxprof
+pip install tokenprof                                          # once released
+pip install git+https://github.com/muhammadwaqar12/tokenprof   # from source
 ```
 
 Point it at a file of request payloads, one JSON object per line:
 
 ```bash
-ctxprof analyze session.jsonl              # every turn, with growth
-ctxprof analyze session.jsonl --turn 4     # one turn, broken down
-ctxprof diff session.jsonl --from 0 --to 9 # what grew between two turns
+tokenprof analyze session.jsonl              # every turn, with growth
+tokenprof analyze session.jsonl --turn 4     # one turn, broken down
+tokenprof diff session.jsonl --from 0 --to 9 # what grew between two turns
 ```
 
-Zero dependencies. `pip install "ctxprof[tiktoken]"` if you want exact counts for OpenAI models instead of the heuristic.
+Zero dependencies. `pip install "tokenprof[tiktoken]"` if you want exact counts for OpenAI models instead of the heuristic.
 
 It reads bare provider payloads or anything wrapping one under `request`, `body`, `payload` or `kwargs`, so most existing logs work without reshaping. `-` reads stdin.
 
@@ -79,7 +80,7 @@ It reads bare provider payloads or anything wrapping one under `request`, `body`
 
 ## Recording a session
 
-`ctxprof` reads payloads; it does not intercept them. That is deliberate, because the moment a profiler sits in your request path it can break the thing it is profiling.
+`tokenprof` reads payloads; it does not intercept them. That is deliberate, because the moment a profiler sits in your request path it can break the thing it is profiling.
 
 Most SDKs and frameworks give you a hook. The shape you want is one JSON object per line, each being the request as it was sent:
 
@@ -132,7 +133,7 @@ Not a runtime guard. It reads logs after the fact.
 
 ## Contributing
 
-The most useful contributions are adapters and payload shapes that break detection. If `ctxprof` cannot read your logs, that is a bug worth reporting, and a redacted sample is the whole fix. See [CONTRIBUTING.md](CONTRIBUTING.md).
+The most useful contributions are adapters and payload shapes that break detection. If `tokenprof` cannot read your logs, that is a bug worth reporting, and a redacted sample is the whole fix. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 

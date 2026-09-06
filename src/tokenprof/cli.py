@@ -6,19 +6,19 @@ import argparse
 import json
 import sys
 
-from ctxprof import __version__
-from ctxprof.attribute import profile_stream, read_jsonl
-from ctxprof.diff import diff_turns
-from ctxprof.report.json_out import diff_to_dict, profile_to_dict, turn_to_dict
-from ctxprof.report.table import render_diff, render_profile, render_turn
+from tokenprof import __version__
+from tokenprof.attribute import profile_stream, read_jsonl
+from tokenprof.diff import diff_turns
+from tokenprof.report.json_out import diff_to_dict, profile_to_dict, turn_to_dict
+from tokenprof.report.table import render_diff, render_profile, render_turn
 
 
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
-        prog="ctxprof",
+        prog="tokenprof",
         description="Profile what is actually consuming your context window.",
     )
-    p.add_argument("--version", action="version", version=f"ctxprof {__version__}")
+    p.add_argument("--version", action="version", version=f"tokenprof {__version__}")
     sub = p.add_subparsers(dest="command", required=True)
 
     common = argparse.ArgumentParser(add_help=False)

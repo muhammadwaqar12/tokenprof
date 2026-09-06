@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from ctxprof.types import Category, Turn
+from tokenprof.types import Category, Turn
 
 
 @dataclass(frozen=True)

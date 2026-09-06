@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "ctxprof"
+name = "tokenprof"
 version = "0.1.0"
 description = "A profiler for the context window. See what is actually eating your tokens, per turn."
 readme = "README.md"
@@ -27,14 +27,14 @@ all = ["tiktoken>=0.7", "rich>=13.0"]
 dev = ["pytest>=7.4", "pytest-cov>=4.1", "ruff>=0.6"]
 
 [project.scripts]
-ctxprof = "ctxprof.cli:main"
+tokenprof = "tokenprof.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/muhammadwaqar12/ctxprof"
-Issues = "https://github.com/muhammadwaqar12/ctxprof/issues"
+Homepage = "https://github.com/muhammadwaqar12/tokenprof"
+Issues = "https://github.com/muhammadwaqar12/tokenprof/issues"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/ctxprof"]
+packages = ["src/tokenprof"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -2,8 +2,8 @@ import json
 
 import pytest
 
-from ctxprof.attribute import profile_request, profile_stream, read_jsonl, unwrap
-from ctxprof.types import Category
+from tokenprof.attribute import profile_request, profile_stream, read_jsonl, unwrap
+from tokenprof.types import Category
 
 
 def test_unwrap_finds_nested_request():

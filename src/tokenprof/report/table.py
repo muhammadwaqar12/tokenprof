@@ -6,9 +6,9 @@ install anything to find out where their tokens went.
 
 from __future__ import annotations
 
-from ctxprof.cost import cost_usd
-from ctxprof.diff import TurnDiff
-from ctxprof.types import Category, Profile, Turn
+from tokenprof.cost import cost_usd
+from tokenprof.diff import TurnDiff
+from tokenprof.types import Category, Profile, Turn
 
 BAR_WIDTH = 28
 TURN_RULE = "-" * (20 + 9 + 7 + BAR_WIDTH + 13)

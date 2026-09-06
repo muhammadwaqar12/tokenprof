@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from ctxprof.diff import TurnDiff
-from ctxprof.types import Category, Profile, Turn
+from tokenprof.diff import TurnDiff
+from tokenprof.types import Category, Profile, Turn
 
 
 def turn_to_dict(turn: Turn) -> dict[str, Any]:

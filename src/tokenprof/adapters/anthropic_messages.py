@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from ctxprof.adapters.base import measure, stringify
-from ctxprof.tokenizer import Tokenizer
-from ctxprof.types import Category, Segment
+from tokenprof.adapters.base import measure, stringify
+from tokenprof.tokenizer import Tokenizer
+from tokenprof.types import Category, Segment
 
 
 class AnthropicMessagesAdapter:

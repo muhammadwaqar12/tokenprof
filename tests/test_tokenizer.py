@@ -1,4 +1,4 @@
-from ctxprof.tokenizer import HeuristicTokenizer, get_tokenizer
+from tokenprof.tokenizer import HeuristicTokenizer, get_tokenizer
 
 
 def test_empty_string_is_zero():

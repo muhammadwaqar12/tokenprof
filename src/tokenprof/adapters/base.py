@@ -11,8 +11,8 @@ from __future__ import annotations
 import json
 from typing import Any, Protocol
 
-from ctxprof.tokenizer import Tokenizer
-from ctxprof.types import Segment
+from tokenprof.tokenizer import Tokenizer
+from tokenprof.types import Segment
 
 
 class Adapter(Protocol):

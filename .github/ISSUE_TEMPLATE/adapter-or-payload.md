@@ -1,6 +1,6 @@
 ---
 name: Adapter request or unreadable payload
-about: ctxprof cannot read your logs, or you want support for a framework
+about: tokenprof cannot read your logs, or you want support for a framework
 title: "Adapter: <framework or provider>"
 labels: adapter
 ---
