@@ -75,6 +75,10 @@ The per-tool line is the part most tools cannot give you. Not "you have 40 tools
 
 Providers cache a **prefix**. If the first N tokens of a request are byte-identical to the last one, you pay a fraction for them. One volatile value near the front moves the break point to zero, and you quietly pay full price on every turn while your config still says caching is on.
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/muhammadwaqar12/tokenprof/main/docs/demo.svg" alt="tokenprof cache finding a broken prompt cache prefix" width="100%">
+</p>
+
 ```
 $ tokenprof cache session.jsonl
 

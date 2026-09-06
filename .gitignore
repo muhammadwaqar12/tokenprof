@@ -12,4 +12,5 @@ htmlcov/
 .DS_Store
 *.jsonl
 !tests/fixtures/*.jsonl
+*.cast
 .probe_*
