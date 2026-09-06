@@ -60,3 +60,28 @@ def test_undetectable_payload_exits_cleanly(tmp_path):
     p.write_text('{"prompt": "legacy"}\n')
     with pytest.raises(SystemExit, match="could not detect"):
         main(["analyze", str(p)])
+
+
+def test_cache_command_table(capsys, thrash_path):
+    assert main(["cache", thrash_path]) == 0
+    out = capsys.readouterr().out
+    assert "what broke the prefix" in out
+    assert "system:system" in out
+    assert "WARNING" in out
+
+
+def test_cache_command_json(capsys, thrash_path):
+    assert main(["cache", thrash_path, "--format", "json"]) == 0
+    data = json.loads(capsys.readouterr().out)
+    assert data["thrashing"] is True
+    assert data["offenders"]["system:system"] == 3
+
+
+def test_cache_needs_two_turns(capsys, anthropic_path):
+    assert main(["cache", anthropic_path]) == 0
+    assert "at least two turns" in capsys.readouterr().out
+
+
+def test_record_without_command_errors():
+    with pytest.raises(SystemExit, match="nothing to run"):
+        main(["record", "--"])

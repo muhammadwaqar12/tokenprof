@@ -8,6 +8,7 @@ has no dependency on any framework.
 
 from __future__ import annotations
 
+import hashlib
 import json
 from typing import Any, Protocol
 
@@ -28,9 +29,19 @@ class Adapter(Protocol):
     def segments(self, request: dict[str, Any], tok: Tokenizer) -> list[Segment]: ...
 
 
-def measure(text: str, tok: Tokenizer) -> tuple[int, int]:
-    """Return (tokens, chars) for a string."""
-    return tok.count(text), len(text)
+def measure(text: str, tok: Tokenizer) -> tuple[int, int, str]:
+    """Return (tokens, chars, digest) for a string.
+
+    The digest is what makes cache analysis possible: two turns can be walked
+    segment by segment to find exactly where the prompt prefix stops being
+    byte-identical, which is the difference between a cache hit and paying
+    full price.
+    """
+    return tok.count(text), len(text), digest_of(text)
+
+
+def digest_of(text: str) -> str:
+    return hashlib.blake2b(text.encode("utf-8", "replace"), digest_size=8).hexdigest()
 
 
 def stringify(value: Any) -> str:

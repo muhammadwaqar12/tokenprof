@@ -6,7 +6,8 @@ install anything to find out where their tokens went.
 
 from __future__ import annotations
 
-from tokenprof.cost import cost_usd
+from tokenprof.cache import CacheReport
+from tokenprof.cost import cost_split, cost_usd
 from tokenprof.diff import TurnDiff
 from tokenprof.types import Category, Profile, Turn
 
@@ -50,12 +51,27 @@ def render_turn(turn: Turn, top: int = 10, rate: float | None = None) -> str:
         f"{_fmt_cost(total, turn.model, rate):>9}"
     )
 
+    if turn.cached_tokens():
+        split = cost_split(
+            turn.cached_tokens(), turn.uncached_tokens(), turn.model, turn.provider, rate
+        )
+        lines.append("")
+        msg = (
+            f"marked for caching: {turn.cached_tokens():,} tokens "
+            f"({_pct(turn.cached_tokens(), total) * 100:.1f}%)"
+        )
+        if split is not None:
+            naive = cost_usd(total, turn.model, rate)
+            msg += f", so this turn bills ${sum(split):,.4f} rather than ${naive:,.4f}"
+        lines.append(msg)
+
     overhead = turn.fixed_overhead_tokens()
     if overhead:
         lines.append("")
         lines.append(
             f"fixed overhead (system + tool schemas): {overhead:,} tokens "
-            f"({_pct(overhead, total) * 100:.1f}% of this turn), paid on every request"
+            f"({_pct(overhead, total) * 100:.1f}% of this turn), re-sent on every request"
+            + (", at cache rates where marked" if turn.cached_tokens() else "")
         )
 
     tools = turn.by_name(Category.TOOL_SCHEMA)
@@ -138,4 +154,69 @@ def render_diff(d: TurnDiff, rate: float | None = None, model: str = "") -> str:
         for x in d.tools:
             state = "added" if x.before == 0 else "removed" if x.after == 0 else "changed"
             lines.append(f"  {x.key:<30} {x.change:>+8,}  ({state})")
+    return "\n".join(lines)
+
+
+def render_cache(report: CacheReport, profile: Profile, rate: float | None = None) -> str:
+    if not report.breaks:
+        return "need at least two turns to analyse the prompt cache"
+
+    provider = profile.turns[0].provider
+    model = profile.turns[0].model
+    lines = [
+        f"prompt cache, {len(profile.turns)} turns  provider={provider}",
+        "",
+        f"{'turns':>9} {'stable':>9} {'total':>9} {'share':>7}  what broke the prefix",
+        "-" * 74,
+    ]
+    for b in report.breaks:
+        who = (
+            "(nothing, append-only)"
+            if b.healthy
+            else (f"{b.breaking.category.value}:{b.breaking.name or '(unnamed)'}")
+        )
+        lines.append(
+            f"{b.before_index:>4} -> {b.after_index:<2} {b.stable_tokens:>9,} "
+            f"{b.total_tokens:>9,} {b.stable_share * 100:>6.1f}%  {who}"
+        )
+    lines.append("-" * 74)
+    lines.append("")
+    lines.append(
+        f"reusable across turns: {report.reusable_tokens:,} tokens "
+        f"| re-sent after a break: {report.rebuilt_tokens:,}"
+    )
+
+    if report.marked_tokens:
+        split = cost_split(report.marked_tokens, 0, model, provider, rate)
+        note = ""
+        if split is not None:
+            full = cost_usd(report.marked_tokens, model, rate)
+            if full:
+                note = f", ${split[0]:,.4f} instead of ${full:,.4f}"
+        lines.append(f"explicitly marked for caching: {report.marked_tokens:,} tokens{note}")
+    elif provider == "anthropic_messages":
+        lines.append(
+            "no cache_control markers found. Anthropic caching is opt-in, so none "
+            "of this is being cached."
+        )
+
+    offenders = report.offenders()
+    if offenders:
+        lines.append("")
+        lines.append("segments that broke the prefix")
+        for key, n in offenders.items():
+            lines.append(f"  {key:<44} {n:>3}x")
+
+    if report.thrashing:
+        worst = report.worst
+        lines.append("")
+        lines.append(
+            f"WARNING: the prefix breaks early. Turn {worst.after_index} reuses only "
+            f"{worst.stable_share * 100:.1f}% of its prompt."
+        )
+        lines.append(
+            "  Anything that changes near the front of the prompt costs you the whole "
+            "cache. Timestamps, session ids and reordered tool lists are the usual "
+            "causes. Move volatile content to the end."
+        )
     return "\n".join(lines)

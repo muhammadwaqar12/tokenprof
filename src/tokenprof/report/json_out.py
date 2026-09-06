@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from tokenprof.cache import CacheReport
 from tokenprof.diff import TurnDiff
 from tokenprof.types import Category, Profile, Turn
 
@@ -53,4 +54,29 @@ def diff_to_dict(d: TurnDiff) -> dict[str, Any]:
         "total": delta(d.total),
         "categories": [delta(x) for x in d.categories],
         "tool_schemas": [delta(x) for x in d.tools],
+    }
+
+
+def cache_to_dict(r: CacheReport) -> dict[str, Any]:
+    return {
+        "reusable_tokens": r.reusable_tokens,
+        "rebuilt_tokens": r.rebuilt_tokens,
+        "marked_tokens": r.marked_tokens,
+        "thrashing": r.thrashing,
+        "offenders": r.offenders(),
+        "breaks": [
+            {
+                "before_index": b.before_index,
+                "after_index": b.after_index,
+                "stable_segments": b.stable_segments,
+                "stable_tokens": b.stable_tokens,
+                "total_tokens": b.total_tokens,
+                "stable_share": round(b.stable_share, 4),
+                "healthy": b.healthy,
+                "breaking": None
+                if b.breaking is None
+                else {"category": b.breaking.category.value, "name": b.breaking.name},
+            }
+            for b in r.breaks
+        ],
     }

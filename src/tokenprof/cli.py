@@ -8,9 +8,16 @@ import sys
 
 from tokenprof import __version__
 from tokenprof.attribute import profile_stream, read_jsonl
+from tokenprof.cache import analyze as analyze_cache
 from tokenprof.diff import diff_turns
-from tokenprof.report.json_out import diff_to_dict, profile_to_dict, turn_to_dict
-from tokenprof.report.table import render_diff, render_profile, render_turn
+from tokenprof.record import record
+from tokenprof.report.json_out import (
+    cache_to_dict,
+    diff_to_dict,
+    profile_to_dict,
+    turn_to_dict,
+)
+from tokenprof.report.table import render_cache, render_diff, render_profile, render_turn
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -43,6 +50,22 @@ def build_parser() -> argparse.ArgumentParser:
     d = sub.add_parser("diff", parents=[common], help="compare two turns")
     d.add_argument("--from", dest="from_", type=int, default=0, help="baseline turn index")
     d.add_argument("--to", type=int, default=-1, help="comparison turn index, -1 for last")
+
+    sub.add_parser(
+        "cache",
+        parents=[common],
+        help="find where the cacheable prompt prefix breaks",
+    )
+
+    r = sub.add_parser("record", help="run a program and capture its requests")
+    r.add_argument("-o", "--out", default="tokenprof.jsonl", help="where to write the JSONL")
+    r.add_argument("--verbose", action="store_true", help="report whether the shim attached")
+    r.add_argument(
+        "argv",
+        nargs=argparse.REMAINDER,
+        metavar="-- COMMAND",
+        help="the command to run, after --",
+    )
 
     return p
 
@@ -99,6 +122,24 @@ def cmd_diff(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_cache(args: argparse.Namespace) -> int:
+    profile = _load(args)
+    report = analyze_cache(profile)
+    if args.format == "json":
+        json.dump(cache_to_dict(report), sys.stdout, indent=2)
+        print()
+    else:
+        print(render_cache(report, profile, rate=args.rate))
+    return 0
+
+
+def cmd_record(args: argparse.Namespace) -> int:
+    argv = [a for a in args.argv if a != "--"]
+    if not argv:
+        raise SystemExit("nothing to run. Usage: tokenprof record -- python your_app.py")
+    return record(argv, args.out, verbose=args.verbose)
+
+
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
@@ -106,6 +147,10 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_analyze(args)
         if args.command == "diff":
             return cmd_diff(args)
+        if args.command == "cache":
+            return cmd_cache(args)
+        if args.command == "record":
+            return cmd_record(args)
     except (ValueError, KeyError) as exc:
         raise SystemExit(str(exc)) from exc
     except BrokenPipeError:

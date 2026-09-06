@@ -2,7 +2,8 @@
 
 <p align="center">
   <a href="#quickstart">Quickstart</a> ·
-  <a href="#what-it-tells-you">What it tells you</a> ·
+  <a href="#where-your-tokens-went">Attribution</a> ·
+  <a href="#is-your-prompt-cache-actually-working">Cache</a> ·
   <a href="#recording-a-session">Recording</a> ·
   <a href="#adapters">Adapters</a> ·
   <a href="CONTRIBUTING.md">Contribute</a>
@@ -21,6 +22,25 @@ You know how many tokens your last request used, because the API told you. You a
 
 There are tools that compress your context and tools that retrieve into it. There is nothing that opens it up and shows you the bill line by line. So when a session gets slow and expensive, the usual move is to guess.
 
+## Quickstart
+
+```bash
+pip install tokenprof                                          # once released
+pip install git+https://github.com/muhammadwaqar12/tokenprof   # from source
+```
+
+Run your program through `record`. It attaches to the OpenAI and Anthropic clients, writes every outgoing request to a file, and changes nothing about what your program does.
+
+```bash
+tokenprof record -o session.jsonl -- python your_agent.py
+tokenprof analyze session.jsonl
+tokenprof cache   session.jsonl
+```
+
+No API keys, no config, no code changes. If you already log request payloads, skip `record` and point `analyze` at what you have.
+
+## Where your tokens went
+
 ```
 $ tokenprof analyze session.jsonl --turn 2
 
@@ -38,7 +58,7 @@ current user                 8    0.2%  ............................   $0.0000
 -----------------------------------------------------------------------------
 TOTAL                    4,305  100.0%                                  $0.0108
 
-fixed overhead (system + tool schemas): 1,347 tokens (31.3% of this turn), paid on every request
+fixed overhead (system + tool schemas): 1,347 tokens (31.3% of this turn), re-sent on every request
 
 tool schemas (4 registered)
   bloated_connector                      912  ####..............
@@ -47,93 +67,90 @@ tool schemas (4 registered)
   read_file                               63  ..................
 ```
 
-One auto-generated tool is consuming 80% of the schema budget and is serialized into every single request whether the model calls it or not. Nothing errors. Nothing in your dashboard says so.
+One auto-generated tool is eating 80% of the schema budget and is serialized into every request whether the model calls it or not. Nothing errors. Nothing in your dashboard says so.
 
-## Quickstart
+The per-tool line is the part most tools cannot give you. Not "you have 40 tools registered" but **which ones**, ranked, in tokens.
 
-```bash
-pip install tokenprof                                          # once released
-pip install git+https://github.com/muhammadwaqar12/tokenprof   # from source
+## Is your prompt cache actually working?
+
+Providers cache a **prefix**. If the first N tokens of a request are byte-identical to the last one, you pay a fraction for them. One volatile value near the front moves the break point to zero, and you quietly pay full price on every turn while your config still says caching is on.
+
+```
+$ tokenprof cache session.jsonl
+
+    turns    stable     total   share  what broke the prefix
+--------------------------------------------------------------------------
+   0 -> 1         68       248   27.4%  system:system
+   1 -> 2         68       302   22.5%  system:system
+   2 -> 3         68       356   19.1%  system:system
+--------------------------------------------------------------------------
+
+reusable across turns: 204 tokens | re-sent after a break: 702
+
+segments that broke the prefix
+  system:system                                  3x
+
+WARNING: the prefix breaks early. Turn 3 reuses only 19.1% of its prompt.
+  Anything that changes near the front of the prompt costs you the whole
+  cache. Timestamps, session ids and reordered tool lists are the usual
+  causes. Move volatile content to the end.
 ```
 
-Point it at a file of request payloads, one JSON object per line:
+That session has a timestamp at the top of the system prompt. Every turn misses, and the tool names the segment responsible rather than just reporting a bad number.
 
-```bash
-tokenprof analyze session.jsonl              # every turn, with growth
-tokenprof analyze session.jsonl --turn 4     # one turn, broken down
-tokenprof diff session.jsonl --from 0 --to 9 # what grew between two turns
-```
+The other common cause is subtler: **registering one new tool mid-session invalidates the whole prefix**, because tool schemas are serialized ahead of the messages. `tokenprof cache` catches that too.
 
-Zero dependencies. `pip install "tokenprof[tiktoken]"` if you want exact counts for OpenAI models instead of the heuristic.
-
-It reads bare provider payloads or anything wrapping one under `request`, `body`, `payload` or `kwargs`, so most existing logs work without reshaping. `-` reads stdin.
-
-## What it tells you
-
-**Fixed overhead, and what it costs over a session.** Your system prompt and every registered tool schema are serialized into context on every turn, used or not. Per turn that is easy to wave away. Multiplied across a session it is usually the largest single line item, and `analyze` prints it as both.
-
-**Which tool is expensive.** Not "you have 40 tools" but which ones, ranked. Auto-generated schemas from OpenAPI specs are routinely 10x the size of hand-written ones, and nobody notices because tool calls keep working.
-
-**What is growing.** `diff` compares two turns and names what changed, including tools that were registered partway through a session.
-
-**Where tool output went.** A tool result that floods the context is attributed to the tool that produced it, so a chatty search tool cannot hide inside "conversation history."
+Cost accounting follows the real pricing. Anthropic bills cache reads at 10% of base and OpenAI at 50%, so a turn with `cache_control` markers reports what it actually bills rather than a blended number that overstates exactly the segments you were smart enough to cache.
 
 ## Recording a session
 
-`tokenprof` reads payloads; it does not intercept them. That is deliberate, because the moment a profiler sits in your request path it can break the thing it is profiling.
+`record` writes a `sitecustomize` shim onto the path of the process you launch, wraps the client `create` methods, and calls through untouched. Two deliberate constraints: it never raises into your program, and it records requests only, never responses.
 
-Most SDKs and frameworks give you a hook. The shape you want is one JSON object per line, each being the request as it was sent:
-
-```python
-import json
-
-
-def log_request(**kwargs):
-    with open("session.jsonl", "a") as f:
-        f.write(json.dumps({"request": kwargs}) + "\n")
+```bash
+tokenprof record --verbose -o session.jsonl -- python your_agent.py
+# tokenprof: patched openai, anthropic
+# tokenprof: captured 14 request(s) to session.jsonl
 ```
 
-If your framework makes this awkward, open an issue. Making recording easy for a specific stack is a good adapter contribution.
+If you would rather log payloads yourself, any JSONL of request objects works. Bare payloads and anything wrapping one under `request`, `body`, `payload` or `kwargs` are all accepted, and `-` reads stdin.
 
 > [!NOTE]
-> Payloads contain your prompts and your tool results. Treat a `.jsonl` as sensitive, and redact before sharing one in a bug report. The default `.gitignore` excludes `*.jsonl` for this reason.
+> A recording contains your prompts and your tool results in full, which usually means credentials and customer data. The default `.gitignore` excludes `*.jsonl`. Redact before attaching one to an issue.
 
 ## Adapters
 
-An adapter turns one provider's payload shape into a list of segments. That is the entire interface, which is why adding one is an afternoon rather than a refactor.
+An adapter turns one provider's payload shape into a list of segments. Three methods, no framework dependency in the core, which is why adding one is an afternoon rather than a refactor.
 
 | Adapter | Status |
 |---|---|
-| `anthropic_messages` | Shipped |
+| `anthropic_messages` | Shipped, with `cache_control` support |
 | `openai_chat` | Shipped |
 | LangGraph / LangChain | Wanted |
 | CrewAI | Wanted |
 | Google ADK | Wanted |
 | Bedrock Converse | Wanted |
 
-Since most frameworks ultimately emit an OpenAI or Anthropic payload, the two shipped adapters already cover a lot of ground. Framework-specific adapters exist to make the recording step easier and to label segments with names the framework uses.
-
-Detection is automatic and asserts that exactly one adapter claims a payload. Pass `--provider` to override it.
+Most frameworks ultimately emit an OpenAI or Anthropic payload, so the two shipped adapters already cover a lot of ground. Detection is automatic, and a test asserts exactly one adapter claims any payload. Pass `--provider` to override.
 
 ## Accuracy
 
 Every report states which tokenizer produced it, because the honest answer varies.
 
-With `tiktoken` installed and an OpenAI model, counts are exact. Otherwise it falls back to `chars / 4`, which runs low on code and on non-Latin scripts. That approximation is fine for ranking segments against each other, which is what you are here for, and it is not a context budget. Do not size a window with it.
+With `tiktoken` installed and an OpenAI model, counts are exact. Otherwise it falls back to `chars / 4`, which runs low on code and non-Latin scripts. That is fine for ranking segments against each other, which is what you are here for, and it is not a context budget.
 
-Serialization is close but not exact. Providers wrap messages and tool schemas in their own formatting, and that wrapper is small next to the payload. Treat the numbers as accurate to a few percent, and the ranking as reliable.
+Serialization is close but not exact. Providers wrap messages and schemas in their own formatting, and that wrapper is small next to the payload. Treat the numbers as accurate to a few percent and the ranking as reliable.
 
 ## What this is not
 
-Not a tracing tool. Langfuse, Phoenix and LangSmith show you latency, spans and token *counts*, and they do it well. None of them show you token *composition*, which is the gap this fills. Run both.
+Not a tracing tool. Langfuse, Phoenix and LangSmith show latency, spans and token *counts*, and do it well. None show token *composition*. Run both.
 
-Not a compressor. It will tell you what to cut. Cutting is your call, because only you know which of those tools you actually need.
+Not a compressor. It tells you what to cut. Cutting is your call.
 
-Not a runtime guard. It reads logs after the fact.
+Not a runtime guard. It reads recordings after the fact, on purpose, so a profiler can never sit in the path of a production request.
 
 ## Contributing
 
-The most useful contributions are adapters and payload shapes that break detection. If `tokenprof` cannot read your logs, that is a bug worth reporting, and a redacted sample is the whole fix. See [CONTRIBUTING.md](CONTRIBUTING.md).
+The most useful contributions are adapters, and payload shapes that break detection. If `tokenprof` cannot read your logs, that is a bug and a redacted sample is the whole fix. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 

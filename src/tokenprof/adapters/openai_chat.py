@@ -40,8 +40,8 @@ class OpenAIChatAdapter:
         for spec in request.get("tools") or []:
             fn = spec.get("function", spec) if isinstance(spec, dict) else {}
             name = fn.get("name", "?") if isinstance(fn, dict) else "?"
-            t, c = measure(stringify(spec), tok)
-            out.append(Segment(Category.TOOL_SCHEMA, t, c, name=name))
+            t, c, dg = measure(stringify(spec), tok)
+            out.append(Segment(Category.TOOL_SCHEMA, t, c, name=name, digest=dg))
 
         messages = request.get("messages") or []
         last_user = _last_user_index(messages)
@@ -55,12 +55,12 @@ class OpenAIChatAdapter:
             if role == "assistant" and msg.get("tool_calls"):
                 text += stringify(msg["tool_calls"])
 
-            t, c = measure(text, tok)
+            t, c, dg = measure(text, tok)
             if t == 0 and c == 0:
                 continue
 
             if role == "system" or role == "developer":
-                out.append(Segment(Category.SYSTEM, t, c, name=role, index=i))
+                out.append(Segment(Category.SYSTEM, t, c, name=role, index=i, digest=dg))
             elif role == "tool":
                 out.append(
                     Segment(
@@ -69,15 +69,16 @@ class OpenAIChatAdapter:
                         c,
                         name=str(msg.get("name") or msg.get("tool_call_id") or "tool"),
                         index=i,
+                        digest=dg,
                     )
                 )
             elif role == "assistant":
-                out.append(Segment(Category.HISTORY_ASSISTANT, t, c, index=i))
+                out.append(Segment(Category.HISTORY_ASSISTANT, t, c, index=i, digest=dg))
             elif role == "user":
                 cat = Category.CURRENT_USER if i == last_user else Category.HISTORY_USER
-                out.append(Segment(cat, t, c, index=i))
+                out.append(Segment(cat, t, c, index=i, digest=dg))
             else:
-                out.append(Segment(Category.OTHER, t, c, name=role, index=i))
+                out.append(Segment(Category.OTHER, t, c, name=role, index=i, digest=dg))
 
         return out
 

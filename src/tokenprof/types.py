@@ -50,6 +50,12 @@ class Segment:
     name: str = ""
     #: Position within the message list, when the segment came from one.
     index: int | None = None
+    #: Short content hash. Lets two turns be compared segment by segment to
+    #: find where a cacheable prefix stops matching.
+    digest: str = ""
+    #: True when the provider was explicitly told to cache this segment, or
+    #: it sits inside a marked cache prefix.
+    cached: bool = False
 
     def __post_init__(self) -> None:
         if self.tokens < 0:
@@ -97,6 +103,12 @@ class Turn:
 
     def fixed_overhead_tokens(self) -> int:
         return sum(s.tokens for s in self.segments if s.category in FIXED_OVERHEAD)
+
+    def cached_tokens(self) -> int:
+        return sum(s.tokens for s in self.segments if s.cached)
+
+    def uncached_tokens(self) -> int:
+        return sum(s.tokens for s in self.segments if not s.cached)
 
     def top(self, n: int = 10) -> list[Segment]:
         return sorted(self.segments, key=lambda s: s.tokens, reverse=True)[:n]

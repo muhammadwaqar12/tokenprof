@@ -19,3 +19,8 @@ def anthropic_request() -> dict:
 @pytest.fixture
 def anthropic_path() -> str:
     return str(FIXTURES / "anthropic_turn.jsonl")
+
+
+@pytest.fixture
+def thrash_path() -> str:
+    return str(FIXTURES / "cache_thrash.jsonl")

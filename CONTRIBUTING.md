@@ -25,7 +25,13 @@ Two rules that matter more than they look:
 
 **`matches` must be exclusive.** There is a test asserting exactly one adapter claims any given payload. If two match, registry ordering silently decides correctness, and that bug surfaces months later as wrong numbers rather than an error. Discriminate on a field only your provider has.
 
+**Emit segments in prompt order.** Cache prefixes are computed over the order you emit, so it has to match the order the provider actually assembles the prompt. Anthropic is tools, then system, then messages. Getting this wrong puts the cache break point in the wrong place and the numbers look plausible while being wrong.
+
 **Name your segments.** A tool schema segment named `search_docs` is actionable. An unnamed one is trivia. The per-tool breakdown is the most useful view in the tool, and it only works if adapters carry names through.
+
+**Carry the digest through.** `measure()` returns `(tokens, chars, digest)`. A segment without a digest can never count as a cache hit, which is the safe default, but it also means `tokenprof cache` goes blind on your provider. Pass it into every `Segment` you build.
+
+**Mark cached segments if your provider has explicit markers.** Anthropic uses `cache_control`, where the marker caches the whole prefix up to and including that block, so only the last marker matters. OpenAI caches automatically with no markers, so its adapter marks nothing and the prefix analysis does the work instead.
 
 ## Categories
 
