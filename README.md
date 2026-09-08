@@ -25,7 +25,7 @@ There are tools that compress your context and tools that retrieve into it. Ther
 ## Quickstart
 
 ```bash
-pip install tokenprof                                          # once released
+pip install tokenprof                                          
 pip install git+https://github.com/muhammadwaqar12/tokenprof   # from source
 ```
 
